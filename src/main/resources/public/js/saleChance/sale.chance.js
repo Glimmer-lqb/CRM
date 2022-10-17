@@ -3,7 +3,7 @@ layui.use(['table','layer'],function(){
         $ = layui.jquery,
         table = layui.table;
     /**
-     * 营销机会列表展示
+     * 加载数据表格
      */
     var  tableIns = table.render({
         elem: '#saleChanceList', // 表格绑定的ID

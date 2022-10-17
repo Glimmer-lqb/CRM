@@ -7,6 +7,7 @@ import com.xxxx.crm.model.UserModel;
 import com.xxxx.crm.query.UserQuery;
 import com.xxxx.crm.service.UserService;
 import com.xxxx.crm.utils.LoginUserUtil;
+import com.xxxx.crm.vo.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -96,5 +97,32 @@ public class UserController extends BaseController {
     @ResponseBody
     public Map<String, Object> selectByParams(UserQuery userQuery) {
         return userService.queryByParamsForTable(userQuery);
+    }
+
+    @RequestMapping("index")
+    public String index() {
+        return "user/user";
+    }
+
+    /**
+     * 添加用户·
+     * @param user
+     * @return
+     */
+    @RequestMapping("add")
+    @ResponseBody
+    public ResultInfo addUser(User user) {
+        userService.addUser(user);
+        return success("用户添加成功");
+    }
+
+    /**
+     * 打开添加或修改用户的页面
+     * @return
+     */
+    @RequestMapping("addOrUpdateUserPage")
+    public String openAddOrUpdateUserDialog() {
+
+        return "user/add_update";
     }
 }
