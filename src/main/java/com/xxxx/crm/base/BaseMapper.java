@@ -6,6 +6,7 @@ import java.util.List;
 
 /**
  * BaseMapper 基本方法定义
+ * 262626
  */
 
 public interface BaseMapper <T,ID>{
