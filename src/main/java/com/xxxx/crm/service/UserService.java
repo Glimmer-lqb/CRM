@@ -2,12 +2,14 @@ package com.xxxx.crm.service;
 
 import com.xxxx.crm.base.BaseService;
 import com.xxxx.crm.dao.UserMapper;
+import com.xxxx.crm.dao.UserRoleMapper;
 import com.xxxx.crm.model.UserModel;
 import com.xxxx.crm.utils.AssertUtil;
 import com.xxxx.crm.utils.Md5Util;
 import com.xxxx.crm.utils.PhoneUtil;
 import com.xxxx.crm.utils.UserIDBase64;
 import com.xxxx.crm.vo.User;
+import com.xxxx.crm.vo.UserRole;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -16,6 +18,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +27,8 @@ import java.util.Map;
 public class UserService extends BaseService<User, Integer> {
     @Resource
     private UserMapper userMapper;
+    @Resource
+    private UserRoleMapper userRoleMapper;
 
     /**
      * 用户登录
@@ -183,7 +188,56 @@ public class UserService extends BaseService<User, Integer> {
         //设置默认密码
         user.setUserPwd(Md5Util.encode("123456"));
         /*3.执行添加操作 判断受影响行数*/
-        AssertUtil.isTrue(userMapper.insertSelective(user) != 1, "添加用户失败，请重试");
+        AssertUtil.isTrue(userMapper.insertSelective(user) < 1, "添加用户失败，请重试");
+        /*4.用户角色关联*/
+        /**
+         * 用户角色关联
+         * 角色分配（添加、更新操作）
+         *  判断用户对应的角色记录是否存在  将用户所有的角色记录删除，再添加新的角色记录
+         *   删除操作
+         *     删除指定用户绑定的角色记录
+         */
+        /**
+         * 用户id userId
+         * 角色id roleIds
+         */
+        relationUserRole(user.getId(),user.getRoleIds());
+    }
+
+    /**
+     * 用户角色关联
+     * @param userId
+     * @param roleIds
+     */
+    private void relationUserRole(Integer userId, String roleIds) {
+        /*1.参数校验*/
+        //通过用户id查询角色记录
+        Integer count = userRoleMapper.countUserRoleByUserId(userId);
+        // 判断角色记录是否存在
+        if(count > 0){
+            // 存在就删除记录
+            AssertUtil.isTrue(userRoleMapper.deleteUserRoleByUserId(userId) != count,"用户角色分配失败");
+        }
+
+        //判断角色id是否勋在  存在添加该用户对应的角色记录
+        if(StringUtils.isNotBlank(roleIds)){
+            //将对应的用户数据设置到集合中，执行批量添加
+            List<UserRole> userRoleList = new ArrayList<>();
+            //将角色id字符串转换成数组
+            String[] roleIdArray = roleIds.split(",");
+            //遍历数组，得到对应的用户角色对象，并设置到集合中
+            for(String roleId : roleIdArray) {
+                UserRole userRole = new UserRole();
+                userRole.setRoleId(Integer.parseInt(roleId));
+                userRole.setUserId(userId);
+                userRole.setCreateDate(new Date());
+                userRole.setUpdateDate(new Date());
+                //设置到集合中
+                userRoleList.add(userRole);
+            }
+            //批量添加用户角色记录
+            AssertUtil.isTrue(userRoleMapper.insertBatch(userRoleList) != userRoleList.size(),"用户角色分配失败");
+        }
     }
 
     /**
@@ -231,6 +285,14 @@ public class UserService extends BaseService<User, Integer> {
         user.setUpdateDate(new Date());
         /*3.执行更新操作，判断受影响行数*/
         AssertUtil.isTrue(userMapper.updateByPrimaryKeySelective(user) != 1, "更新用户信息失败，请重试！");
+        /**
+         * 用户角色关联
+         * 角色分配（添加、更新操作）
+         *  判断用户对应的角色记录是否存在  将用户所有的角色记录删除，再添加新的角色记录
+         * 用户id userId
+         * 角色id roleIds
+         */
+        relationUserRole(user.getId(),user.getRoleIds());
     }
 
 
@@ -244,5 +306,18 @@ public class UserService extends BaseService<User, Integer> {
         AssertUtil.isTrue(ids == null || ids.length == 0,"待删除记录不存在");
         //执行删除操作 判断受影响行数
         AssertUtil.isTrue(userMapper.deleteBatch(ids) != ids.length,"用户删除失败");
+        //删除用户关联角色
+        //遍历用户ID的数组
+        for(Integer userId : ids){
+          //通过用户id查询用户角色记录
+          Integer count = userRoleMapper.countUserRoleByUserId(userId);
+          //判断用户角色记录是否存在
+            if(count > 0){
+                //通过用户id删除
+                AssertUtil.isTrue(userRoleMapper.deleteUserRoleByUserId(userId) != count,"删除用户失败");
+            }
+        }
     }
+
+
 }

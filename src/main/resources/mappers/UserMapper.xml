@@ -35,7 +35,14 @@
                 #{trueName,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR},
                 #{isValid,jdbcType=INTEGER}, #{createDate,jdbcType=TIMESTAMP}, #{updateDate,jdbcType=TIMESTAMP})
     </insert>
-    <insert id="insertSelective" parameterType="com.xxxx.crm.vo.User">
+    <!--如果添加操作默认返回受影响行数
+    可以设置返回主键（自动增长）
+     useGeneratedKeys="true" 取值返回就是true和false 表示会获取主键，并赋值给keyProperty属性设置的模型属性中（JavaBean实体类中的属性字段）
+     keyProperty="id"  设置返回值将赋值给数据模型的哪个属性字段
+      keyColumn="id">  设置数据库中自动生成的主键名
+        返回的主键会自动设置到实体类中对应的id属性字段中
+    -->
+    <insert id="insertSelective" parameterType="com.xxxx.crm.vo.User" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         insert into t_user
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="id != null">
