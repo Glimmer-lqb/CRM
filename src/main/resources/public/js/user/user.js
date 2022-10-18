@@ -1,4 +1,4 @@
-layui.use(['table','layer'],function(){
+layui.use(['table', 'layer'], function () {
     var layer = parent.layer === undefined ? layui.layer : top.layer,
         $ = layui.jquery,
         table = layui.table;
@@ -6,29 +6,35 @@ layui.use(['table','layer'],function(){
     /**
      * 加载数据表格
      */
-    var  tableIns = table.render({
+    var tableIns = table.render({
         elem: '#userList', // 表格绑定的ID
-        url : ctx + '/user/list', // 访问数据的地址（后台的数据接口）
-        cellMinWidth : 95,//单元格最小的宽度
-        page : true, // 开启分页
-        height : "full-125",//容器高度
-        limits : [10,15,20,25],//每页页数的可选项
-        limit : 10,//默认每页显示的数量
+        url: ctx + '/user/list', // 访问数据的地址（后台的数据接口）
+        cellMinWidth: 95,//单元格最小的宽度
+        page: true, // 开启分页
+        height: "full-125",//容器高度
+        limits: [10, 15, 20, 25],//每页页数的可选项
+        limit: 10,//默认每页显示的数量
         toolbar: "#toolbarDemo",//开启头部工具栏
-        id :'userTable',
-        cols : [[
-            {type: "checkbox", fixed:"left", width:50},
-            {field: "id", title:'编号',fixed:"true", width:80},
-            {field: 'userName', title: '用户名', minWidth:50, align:"center"},
-            {field: 'email', title: '用户邮箱', minWidth:100, align:'center'},
-            {field: 'phone', title: '用户电话', minWidth:100, align:'center'},
-            {field: 'trueName', title: '真实姓名', align:'center'},
-            {field: 'createDate', title: '创建时间',
-                align:'center',minWidth:150},
-            {field: 'updateDate', title: '更新时间',
-                align:'center',minWidth:150},
-            {title: '操作', minWidth:150,
-                templet:'#userListBar',fixed:"right",align:"center"}
+        id: 'userTable',
+        cols: [[
+            {type: "checkbox", fixed: "left", width: 50},
+            {field: "id", title: '编号', fixed: "true", width: 80},
+            {field: 'userName', title: '用户名', minWidth: 50, align: "center"},
+            {field: 'email', title: '用户邮箱', minWidth: 100, align: 'center'},
+            {field: 'phone', title: '用户电话', minWidth: 100, align: 'center'},
+            {field: 'trueName', title: '真实姓名', align: 'center'},
+            {
+                field: 'createDate', title: '创建时间',
+                align: 'center', minWidth: 150
+            },
+            {
+                field: 'updateDate', title: '更新时间',
+                align: 'center', minWidth: 150
+            },
+            {
+                title: '操作', minWidth: 150,
+                templet: '#userListBar', fixed: "right", align: "center"
+            }
         ]]
     });
     /**
@@ -45,10 +51,10 @@ layui.use(['table','layer'],function(){
             where: { //设定异步数据接口的额外参数，任意设
                 // 通过文本框/下拉框的值，设置传递的参数
                 userName: $("[name='userName']").val() // 客户名称
-                ,email: $("[name='email']").val() // 创建人
-                ,phone:$("[name='phone']").val() // 状态
+                , email: $("[name='email']").val() // 创建人
+                , phone: $("[name='phone']").val() // 状态
             }
-            ,page: {
+            , page: {
                 curr: 1 // 重新从第 1 页开始
             }
         });
@@ -69,25 +75,130 @@ layui.use(['table','layer'],function(){
 
         } else if (data.event == "del") {
             // 删除操作
-            deleteSaleChance(data);
+            //获取被选中的数据的信息
+            var checkStatus = table.checkStatus(data.config.id);
+            console.log(checkStatus);
+            deleteUsers(checkStatus.data);
         }
     })
+    /**
+     * 监听行工具栏事件
+     *  格式：
+     *      table.on('toolbar(数据表格的lay-filter属性值)', function (data) { })
+     */
+    table.on('tool(users)', function (data) {
+        // data.event：对应的元素上设置的lay-event属性值
+        // console.log(data);
+        // 判断对应的事件类型
+        if (data.event == "edit") {
+            // 打开添加操作或修改对话框
+            openAddOrUpdateUserDialog(data.data.id);
+        }else if (data.event == "del") { // 删除用户
+            // 删除单条用户记录
+            deleteUser(data.data.id);
+        }
+    })
+    /**
+     * 删除单条用户记录
+     * @param id
+     */
+    function deleteUser(id) {
+        // 弹出确认框，询问用户是否确认删除
+        layer.confirm('确定要删除该记录吗？',{icon:3, title:"用户管理"}, function (index) {
+            // 关闭确认框
+            layer.close(index);
+
+            // 发送ajax请求，删除记录
+            $.ajax({
+                type:"post",
+                url:ctx + "/user/delete",
+                data:{
+                    ids:id
+                },
+                success:function (result) {
+                    // 判断删除结果
+                    if (result.code == 200) {
+                        // 提示成功
+                        layer.msg("删除成功！",{icon:6});
+                        // 刷新表格
+                        tableIns.reload();
+                    } else {
+                        // 提示失败
+                        layer.msg(result.msg, {icon:5});
+                    }
+                }
+            });
+        });
+    }
+    /**
+     * 删除多条用户记录
+     * @param userData
+     */
+    function deleteUsers(userData) {
+        // 判断用户是否选择了要删除的记录
+        if (userData.length == 0) {
+            layer.msg("请选择要删除的记录！", {icon:5});
+            return;
+        }
+
+        // 询问用户是否确认删除
+        layer.confirm('您确定要删除选中的记录吗？',{icon:3, title:'用户管理'}, function (index) {
+            // 关闭确认框
+            layer.close(index);
+            // 传递的参数是数组   ids=1&ids=2&ids=3
+            var ids = "ids=";
+            // 循环选中的行记录的数据
+            for(var i = 0; i < userData.length; i++) {
+                if(i < userData.length -1) {
+                    ids = ids + userData[i].id + "&ids="
+                } else {
+                    ids = ids + userData[i].id;
+                }
+            }
+            // console.log(ids);
+
+            // 发送ajax请求，执行删除用户
+            $.ajax({
+                type:"post",
+                url:ctx + "/user/delete",
+                data:ids, // 传递的参数是数组 ids=1&ids=2&ids=3
+                success:function (result) {
+                    // 判断删除结果
+                    if (result.code == 200) {
+                        // 提示成功
+                        layer.msg("删除成功！",{icon:6});
+                        // 刷新表格
+                        tableIns.reload();
+                    } else {
+                        // 提示失败
+                        layer.msg(result.msg, {icon:5});
+                    }
+                }
+            });
+        });
+
+    }
+
 });
+
+
+
 /**
  * 打开用户添加或更新对话框
  */
-function openAddOrUpdateUserDialog() {
-    var url  =  ctx + "/user/addOrUpdateUserPage";
+function openAddOrUpdateUserDialog(id) {
+    var url = ctx + "/user/addOrUpdateUserPage";
     var title = "用户管理-用户添加";
-    // if(userId){
-    //     url = url + "?id="+userId;
-    //     title = "用户管理-用户更新";
-    // }
+    //判断id是否为空；如果为空，则执行添加操作 否则执行修改操作
+    if(id != null && id != ''){
+        url = url + "?id="+id;//传递主键 查询数据
+        title = "<h3>用户管理-用户更新</h3>";
+    }
     layui.layer.open({
-        title : title,
-        type : 2,
-        area:["650px","400px"],
-        maxmin:true,
-        content : url
+        title: title,
+        type: 2,
+        area: ["650px", "400px"],
+        maxmin: true,
+        content: url
     });
 }

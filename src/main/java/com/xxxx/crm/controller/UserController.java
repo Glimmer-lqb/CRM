@@ -115,14 +115,40 @@ public class UserController extends BaseController {
         userService.addUser(user);
         return success("用户添加成功");
     }
-
+    /**
+     * 更新用户信息·
+     * @param user
+     * @return
+     */
+    @RequestMapping("update")
+    @ResponseBody
+    public ResultInfo updateUser(User user) {
+        userService.updateUser(user);
+        return success("用户更新成功");
+    }
+    /**
+     * 删除用户信息
+     * @param ids
+     * @return
+     */
+    @RequestMapping("delete")
+    @ResponseBody
+    public ResultInfo deleteUser(Integer[] ids) {
+        userService.deleteByIds(ids);
+        return success("用户删除成功");
+    }
     /**
      * 打开添加或修改用户的页面
      * @return
      */
     @RequestMapping("addOrUpdateUserPage")
-    public String openAddOrUpdateUserDialog() {
-
+    public String openAddOrUpdateUserDialog(Integer id,HttpServletRequest request) {
+        //判断id是否为空 不为空执行更新操作 查询用户对象
+        if(id != null ){
+            User user = userService.selectByPrimaryKey(id);
+            //将数据设置到请求域中
+            request.setAttribute("userInfo",user);
+        }
         return "user/add_update";
     }
 }

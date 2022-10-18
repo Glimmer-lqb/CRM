@@ -24,13 +24,17 @@ layui.use(['form', 'layer', 'formSelects'], function () {
             time:false, // 不关闭
             shade:0.8 // 设置遮罩的透明度
         });
+        //得到所有的表单元素的值
+        var formData = data.field;
         // 请求的地址
         var url = ctx + "/user/add";
         // 发送ajax请求
         // 通过营销机会的ID来判断当前需要执行添加操作还是修改操作
         // 如果营销机会的ID为空，则表示执行添加操作；如果ID不为空，则表示执行更新操作
         // 通过获取隐藏域中的ID
-       var formData = data.field;
+        if($("[name='id']").val()){
+            var url = ctx + "/user/update";
+        }
         $.post(url, formData, function (result) {
             // 操作成功
             if (result.code == 200) {
