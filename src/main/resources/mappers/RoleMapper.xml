@@ -120,4 +120,19 @@
         WHERE
             r.is_valid = 1;
     </select>
+    <!--多条件查询-->
+    <select id="selectByParams" parameterType="com.xxxx.crm.query.RoleQuery" resultType="com.xxxx.crm.vo.Role">
+       select
+<include refid="Base_Column_List"></include>
+from t_role
+        <where>
+            is_valid = 1
+            /*用户名查询*/
+            <if test="null != roleName and roleName != ''">
+                and role_name like concat('%',#{roleName},'%')
+            </if>
+
+        </where>
+
+    </select>
 </mapper>
