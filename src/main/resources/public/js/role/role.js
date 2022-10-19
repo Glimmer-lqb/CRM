@@ -62,4 +62,87 @@ layui.use(['table','layer'],function(){
               });
        });
 
+       /**
+        * 监听头部工具栏
+        */
+       table.on('toolbar(roles)',function (data) {
+              // 判断lay-event属性
+              if (data.event == "add") { // 添加操作
+                     // 打开添加/更新角色的对话框
+                     openAddOrUpdateRoleDialog();
+
+              } else if (data.event == "grant") { // 授权操作
+                     // 获取数据表格选中的记录数据
+                     var checkStatus = table.checkStatus(data.config.id);
+                     // 打开授权的对话框
+                     openAddGrantDialog(checkStatus.data);
+              }
+       });
+       /**
+        * 监听行工具栏
+        */
+       table.on('tool(roles)',function (data) {
+              // 判断lay-event属性
+              if (data.event == "edit") { // 修改角色
+                     // 打开添加/更新角色的对话框
+                     openAddOrUpdateRoleDialog(data.data.id);
+              } else if (data.event == "del") {
+                     // 删除角色
+                     deleteRole(data.data.id);
+              }
+       });
+       /**
+        * 打开添加/更新角色的对话框
+        */
+       function openAddOrUpdateRoleDialog(roleId) {
+              var title = "<h3>角色管理 - 角色添加</h3>"
+              var url = ctx + "/role/toAddOrUpdateRolePage";
+
+             // 如果roleId不为空，则表示修改角色
+              if (roleId != null && roleId != '') {
+                     title = "<h3>角色管理 - 角色更新</h3>";
+                     url += "?roleId=" + roleId;
+              }
+
+              layui.layer.open({
+                     title:title,
+                     content:url,
+                     area:["500px","400px"],
+                     type:2,
+                     maxmin:true
+              });
+       }
+       /**
+        * 删除角色
+        * @param roleId
+        */
+       function deleteRole(roleId) {
+              // 弹出确认框，询问用户是否确认删除
+              layer.confirm('确定要删除该记录吗？',{icon:3, title:"角色管理"}, function (index) {
+                     // 关闭确认框
+                     layer.close(index);
+
+                     // 发送ajax请求，删除记录
+                     $.ajax({
+                            type:"post",
+                            url:ctx + "/role/delete",
+                            data:{
+                                   roleId:roleId
+                            },
+                            success:function (result) {
+                                   // 判断删除结果
+                                   if (result.code == 200) {
+                                          // 提示成功
+                                          layer.msg("删除成功！",{icon:6});
+                                          // 刷新表格
+                                          tableIns.reload();
+                                   } else {
+                                          // 提示失败
+                                          layer.msg(result.msg, {icon:5});
+                                   }
+                            }
+                     });
+              });
+       }
+
 });

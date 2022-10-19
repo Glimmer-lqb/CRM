@@ -105,26 +105,27 @@
     </update>
     <!--查询所有的角色列表-->
     <select id="queryAllRoles" parameterType="int" resultType="java.util.Map">
-        SELECT
-            r.id,
-            r.role_name AS roleName,
-            CASE
+        SELECT r.id,
+               r.role_name AS roleName,
+               CASE
 
-                WHEN IFNULL( temp.id, 0 ) = 0 THEN
-                    '' ELSE 'selected'
-                END
+                   WHEN IFNULL(temp.id, 0) = 0 THEN
+                       ''
+                   ELSE 'selected'
+                   END
             as 'selected'
-        FROM
-            t_role r
-                LEFT JOIN ( SELECT r.id FROM t_role r LEFT JOIN t_user_role ur ON r.id = ur.role_id WHERE user_id = #{userId} ) temp ON r.id = temp.id
-        WHERE
-            r.is_valid = 1;
+        FROM t_role r
+                 LEFT JOIN (SELECT r.id
+                            FROM t_role r
+                                     LEFT JOIN t_user_role ur ON r.id = ur.role_id
+                            WHERE user_id = #{userId}) temp ON r.id = temp.id
+        WHERE r.is_valid = 1;
     </select>
     <!--多条件查询-->
     <select id="selectByParams" parameterType="com.xxxx.crm.query.RoleQuery" resultType="com.xxxx.crm.vo.Role">
-       select
-<include refid="Base_Column_List"></include>
-from t_role
+        select
+        <include refid="Base_Column_List"></include>
+        from t_role
         <where>
             is_valid = 1
             /*用户名查询*/
@@ -134,5 +135,14 @@ from t_role
 
         </where>
 
+    </select>
+    <!--通过角色名查询角色记录-->
+    <select id="selectByRoleName" parameterType="string" resultType="com.xxxx.crm.vo.Role">
+        select
+        <include refid="Base_Column_List"/>
+        from t_role
+        where
+        is_valid = 1
+        and role_name = #{roleName}
     </select>
 </mapper>
