@@ -1,7 +1,7 @@
 layui.use(['table','layer'],function(){
        var layer = parent.layer === undefined ? layui.layer : top.layer,
-        $ = layui.jquery,
-        table = layui.table;
+           $ = layui.jquery,
+           table = layui.table;
 
 
        /**
@@ -62,6 +62,7 @@ layui.use(['table','layer'],function(){
               });
        });
 
+
        /**
         * 监听头部工具栏
         */
@@ -78,6 +79,7 @@ layui.use(['table','layer'],function(){
                      openAddGrantDialog(checkStatus.data);
               }
        });
+
        /**
         * 监听行工具栏
         */
@@ -91,6 +93,8 @@ layui.use(['table','layer'],function(){
                      deleteRole(data.data.id);
               }
        });
+
+
        /**
         * 打开添加/更新角色的对话框
         */
@@ -98,7 +102,7 @@ layui.use(['table','layer'],function(){
               var title = "<h3>角色管理 - 角色添加</h3>"
               var url = ctx + "/role/toAddOrUpdateRolePage";
 
-             // 如果roleId不为空，则表示修改角色
+              // 如果roleId不为空，则表示修改角色
               if (roleId != null && roleId != '') {
                      title = "<h3>角色管理 - 角色更新</h3>";
                      url += "?roleId=" + roleId;
@@ -112,6 +116,7 @@ layui.use(['table','layer'],function(){
                      maxmin:true
               });
        }
+
        /**
         * 删除角色
         * @param roleId
@@ -144,5 +149,34 @@ layui.use(['table','layer'],function(){
                      });
               });
        }
+
+
+       /**
+        * 打开授权页面
+        */
+       function openAddGrantDialog(data) {
+              // 判断是否选择了角色记录
+              if (data.length == 0) {
+                     layer.msg("请选择要授权的角色！",{icon:5});
+                     return;
+              }
+              // 只支持单个角色授权
+              if (data.length > 1) {
+                     layer.msg("暂不支持批量角色授权！",{icon:5});
+                     return;
+              }
+
+              var url = ctx + "/module/toAddGrantPage?roleId="+data[0].id;
+              var title = "<h3>角色管理 - 角色授权</h3>";
+              layui.layer.open({
+                     title:title,
+                     content:url,
+                     type:2,
+                     area:["600px","600px"],
+                     maxmin: true
+              });
+
+       }
+
 
 });
