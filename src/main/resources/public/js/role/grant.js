@@ -14,22 +14,17 @@ function loadModuleData() {
     // 配置信息对象  zTree的参数配置
     var setting = {
         // 使用复选框
-        check: {
-            enable: true
+        check:{
+            enable:true
         },
         // 使用简单的JSON数据
-        data: {
-            simpleData: {
+        data:{
+            simpleData:{
                 enable: true
             }
         }
     }
-        // 绑定函数
-    //     callback: {
-    //         // onCheck函数：当 checkbox/radio 被选中或取消选中时触发的函数
-    //         onCheck: zTreeOnCheck
-    //     }
-    // };
+
 
     // 数据
     // 通过ajax查询资源列表

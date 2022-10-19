@@ -11,7 +11,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-@RequestMapping("modelController")
+@RequestMapping("module")
 @Controller
 public class ModuleController extends BaseController {
     @Resource
@@ -33,13 +33,13 @@ public class ModuleController extends BaseController {
 
     /***
      * 进入授权页面
-     *
-     * @param roleId
+     * @param
      * @return java.lang.String
      */
     @RequestMapping("toAddGrantPage")
-    public String toAddGrantPage(Integer roleId) {
+    public String toAddGrantPage(Integer roleId, HttpServletRequest request) {
+        // 将需要授权的角色ID设置到请求域中
+        request.setAttribute("roleId", roleId);
         return "role/grant";
     }
-
 }
