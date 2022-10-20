@@ -1,8 +1,10 @@
 package com.xxxx.crm.controller;
 
 import com.xxxx.crm.base.BaseController;
+import com.xxxx.crm.base.ResultInfo;
 import com.xxxx.crm.model.TreeModel;
 import com.xxxx.crm.service.ModuleService;
+import com.xxxx.crm.service.RoleService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -16,19 +18,23 @@ import java.util.List;
 public class ModuleController extends BaseController {
     @Resource
     private ModuleService moduleService;
+    @Resource
+    private RoleService roleService;
+
     /**
      * 查询所有的资源列表
-     *
-     *
+     * <p>
+     * <p>
      * 乐字节：专注线上IT培训
      * 答疑老师微信：lezijie
+     *
      * @param
      * @return java.util.List<com.xxxx.crm.model.TreeModel>
      */
     @RequestMapping("queryAllModules")
     @ResponseBody
-    public List<TreeModel> queryAllModules() {
-        return moduleService.queryAllModules();
+    public List<TreeModel> queryAllModules(Integer roleId) {
+        return moduleService.queryAllModules(roleId);
     }
 
     /***
@@ -42,4 +48,5 @@ public class ModuleController extends BaseController {
         request.setAttribute("roleId", roleId);
         return "role/grant";
     }
+
 }
